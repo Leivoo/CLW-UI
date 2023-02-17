@@ -1,10 +1,12 @@
 {
   "name": "clw-ui",
-  "version": "1.1.3",
+  "version": "1.0.4",
   "private": false,
-  "description": "组件发布测试",
+  "description": "基于elementui的业务组件库",
   "author": "Leivoo",
+  "license": "MIT",
   "main": "lib/clw-ui.common.js",
+  "keyword": "vue2 element-ui",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

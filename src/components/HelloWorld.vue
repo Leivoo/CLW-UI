@@ -5,7 +5,7 @@
       :isExpand="false"
       @handleSearch="handleSearch"
     />
-    <!-- <TreeSelect /> -->
+    <TreeSelect :data="datas" v-model="value" @handleGetValue="getNode" />
     <Vs :dataList="dataList" />
   </div>
 </template>
@@ -90,6 +90,64 @@ export default {
         },
       ],
       dataList: [],
+      value: '',
+      datas: [
+        {
+          label: '一级 1',
+          children: [
+            {
+              label: '二级 1-1',
+              children: [
+                {
+                  label: '三级 1-1-1',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: '一级 2',
+          children: [
+            {
+              label: '二级 2-1',
+              children: [
+                {
+                  label: '三级 2-1-1',
+                },
+              ],
+            },
+            {
+              label: '二级 2-2',
+              children: [
+                {
+                  label: '三级 2-2-1',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: '一级 3',
+          children: [
+            {
+              label: '二级 3-1',
+              children: [
+                {
+                  label: '三级 3-1-1',
+                },
+              ],
+            },
+            {
+              label: '二级 3-2',
+              children: [
+                {
+                  label: '三级 3-2-1',
+                },
+              ],
+            },
+          ],
+        },
+      ],
     }
   },
   created() {
@@ -98,20 +156,8 @@ export default {
     }
   },
   methods: {
-    handleSearch(val) {
-      console.log(val, '成了')
-    },
-    // handleFilter(item) {
-    //   this.dataList = this.dataList.filter((i) => i.name === item)
-    // },
+    handleSearch(val) {},
+    getNode(val1) {},
   },
 }
 </script>
-
-<style lang="less" scoped>
-.box {
-  // width: 800px;
-  // height: 10px;
-  // margin: 0 auto;
-}
-</style>

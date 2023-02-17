@@ -1,10 +1,12 @@
 // packages/index.js
 
 import CDynamicSearch from './clw-dynamic-search/index'
+import CTreeSelect from './clw-treeSelect/index'
+import CVirtualizedSelect from './clw-virtualizedSelect/index'
 
 // 组件集合，用于遍历
 
-const components = [CDynamicSearch]
+const components = [CDynamicSearch, CTreeSelect, CVirtualizedSelect]
 
 // 定义 install 方法
 

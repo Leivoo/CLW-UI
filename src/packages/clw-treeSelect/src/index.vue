@@ -7,6 +7,8 @@
       :close-delay="100"
       :append-to-body="false"
       popper-class="treeSelect_popper"
+      @show="showPopover"
+      @hide="hidePopover"
     >
       <el-input
         :readonly="true"
@@ -14,14 +16,13 @@
         size="mini"
         slot="reference"
         suffix-icon="el-icon-arrow-down"
-        v-model="value"
+        v-model="treeSelectValue"
         clearable
       />
       <div style="padding-left: 2%">
         <el-input
           placeholder="请输入筛选值"
           v-model="filterVal"
-          size="mini"
           clearable
           suffix-icon="el-icon-search"
         />
@@ -29,7 +30,7 @@
       <div class="content">
         <el-tree
           ref="tree"
-          :data="datas"
+          :data="data"
           node-key="id"
           :props="defaultProps"
           highlight-current
@@ -42,94 +43,30 @@
   </div>
 </template>
 <script>
+import { cloneDeep } from 'lodash'
+
 export default {
-  name: 'treeSelect',
+  name: 'CTreeSelect',
   data() {
     return {
-      value: '',
       filterVal: '',
       valueArr: [],
-      containerWidth: 400,
       currentNode: '',
-      defaultProp: {
-        children: 'children',
-        label: 'label',
-      },
-      datas: [
-        {
-          label: '一级 1',
-          children: [
-            {
-              label: '二级 1-1',
-              children: [
-                {
-                  label: '三级 1-1-1',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: '一级 2',
-          children: [
-            {
-              label: '二级 2-1',
-              children: [
-                {
-                  label: '三级 2-1-1',
-                },
-              ],
-            },
-            {
-              label: '二级 2-2',
-              children: [
-                {
-                  label: '三级 2-2-1',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: '一级 3',
-          children: [
-            {
-              label: '二级 3-1',
-              children: [
-                {
-                  label: '三级 3-1-1',
-                },
-              ],
-            },
-            {
-              label: '二级 3-2',
-              children: [
-                {
-                  label: '三级 3-2-1',
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      treeData: [],
     }
   },
   model: {
-    prop: 'defaultValue',
-    event: 'change',
+    prop: 'treeSelectValue',
+    event: 'selectcChange',
   },
   props: {
     id: {
       type: String,
       default: '',
     },
-    dpName: {
+    treeSelectValue: {
       type: String,
       default: '',
-    },
-    form: {
-      type: Array,
-      default: () => [],
     },
     defaultProps: {
       type: Object,
@@ -137,40 +74,18 @@ export default {
         return { value: 'id', label: 'label', children: 'children' }
       },
     },
-    width: {
-      type: Number,
-    },
-    // tree 选项
+    // TODO: 接收树形数据
     data: {
       type: Array,
       required: true,
     },
-    defaultValue: {
-      type: String,
-    },
-    // 是否显示所有层级
-    showAllLevels: {
-      type: Boolean,
-      default: true,
-    },
-    // 分隔符
-    separator: {
-      type: String,
-      default: '/',
-    },
   },
   watch: {
-    defaultValue: {
-      immediate: true,
-      handler(val) {
-        this.value = val
-      },
+    data(val) {
+      this.treeData = cloneDeep(val)
     },
     filterVal(val) {
       this.$refs.tree.filter(val)
-    },
-    dpName(val) {
-      this.value = val
     },
     id(val) {
       console.log(val, 'id')
@@ -181,36 +96,15 @@ export default {
     },
   },
   created() {},
-  mounted() {
-    // console.log(this.$refs.container.offsetWidth);
-    // this.containerWidth = this.$refs.container.offsetWidth;
-    this.$refs('pop').style.height = this.$refs('container').style.height
-  },
   methods: {
-    // 清空form表单校验（自定义组件）
-    // this.$refs['formItem'].$emit('el.form.blur', v)
+    showPopver() {},
     handleNodeClick(data, node) {
-      console.log(data, node)
-      // this.valueArr = [];
       this.handleGetNodeName(node)
-      // this.valueArr.push(data[this.defaultProps.label]);
-      // if (this.showAllLevels) {
-      //   this.value = this.valueArr.join(this.separator);
-      // } else {
-      //   this.value = this.valueArr[this.valueArr.length - 1];
-      // }
-      this.currentNode = data.id
+      this.currentNode = data?.id
       this.$nextTick(() => {
         this.$refs['tree'].setCurrentKey(this.currentNode)
       })
-      console.log(this.form, 'node')
-      this.value = data.name
-      this.form.forEach((i) => {
-        if (i.label === '处置单位') {
-          i.id = this.currentNode
-        }
-      })
-      this.$emit('change', this.value)
+      this.$emit('selectcChange', data.label)
       this.$emit('handleGetValue', {
         data,
         node,
@@ -224,9 +118,9 @@ export default {
       }
     },
     filterNode(value, data) {
-      console.log(data, '树')
+      console.log(value, data, '树')
       if (!value) return true
-      return data?.name?.indexOf(value) !== -1
+      return data?.label?.indexOf(value) !== -1
     },
   },
 }

@@ -83,6 +83,7 @@
 
 <script>
 import { chunk, cloneDeep } from 'lodash'
+import {} from '../../clw-treeSelect/src/index.vue'
 export default {
   name: 'CDynamicSearch',
   props: {
@@ -149,7 +150,7 @@ export default {
       this.isExpands = !this.isExpands
     },
     handleSearch() {
-      console.log(this.realForm, 'success')
+      // console.log(this.realForm, 'success')
       this.$emit('handleSearch', this.realForm)
     },
     handleRefresh() {
