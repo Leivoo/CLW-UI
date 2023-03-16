@@ -4,18 +4,20 @@
     v-model="values"
     popper-class="virtualSelect"
     :filter-method="filterData"
-    :filterable="multiple"
+    filterable
     :multiple="multiple"
     :clearable="clearable"
     :size="size"
     collapse-tags
   >
     <VirtualList
+      v-if="isShow"
       style="max-height: 245px; overflow-y: auto"
       ref="virtualSelect"
       class="virtual_style"
       :data-key="'value'"
       :data-sources="mediaAccountArr"
+      :estimate-size="estimateSize"
       :data-component="itemComponent"
       :keeps="50"
       :extra-props="{
@@ -29,6 +31,7 @@
 <script>
 import VirtualList from 'vue-virtual-scroll-list'
 import VirtualItem from './compontents/index.vue'
+import { cloneDeep } from 'lodash'
 
 export default {
   name: 'VirtualLists',
@@ -44,6 +47,12 @@ export default {
       type: Number,
       default: 30,
     },
+    // 每个项目的估计大小，如果更接近平均大小，则滚动条长度看起来更准确。 建议分配自己计算的平均值。
+    estimateSize: {
+      type: Number,
+      default: 34,
+    },
+
     multiple: {
       type: Boolean,
       default: false,
@@ -61,7 +70,7 @@ export default {
       default: 0,
     },
     size: {
-      type: Boolean,
+      type: String,
       default: 'mini',
     },
     selectVal: {
@@ -76,32 +85,43 @@ export default {
       virtualoptions: [], // 在定义个存全量数据的数组
       chooseList: [],
       values: this.selectVal,
+      curIndex: '',
+      isShow: true,
     }
   },
   watch: {
-    optionData(val) {
+    optionsData(val) {
+      console.log(val, 2332)
       this.mediaAccountArr = cloneDeep(val)
-      this.chooseList = []
-      console.log(this.mediaAccountArr, 'option')
-      // TODO: 数据处理排序 优先将选中数据放至数据列开头解决虚拟滚动的回显问题
-      if (this.mediaAccount.length) {
-        let obj = {}
-        this.mediaAccount.forEach((i) => {
-          this.chooseList.push(
-            ...this.mediaAccountArr.filter((item) => i == item.value)
-          )
-        })
-        this.mediaAccountArr = [...this.chooseList, ...this.mediaAccountArr]
-        this.mediaAccountArr = this.mediaAccountArr.reduce((cur, next) => {
-          obj[next.value] ? '' : (obj[next.value] = true && cur.push(next))
-          return cur
-        }, [])
-      }
-      this.virtualoptions = this.mediaAccountArr
+
+      // this.chooseList = []
+      // console.log(this.mediaAccountArr, 'option')
+      // // TODO: 数据处理排序 优先将选中数据放至数据列开头解决虚拟滚动的回显问题
+      // if (this.mediaAccount?.length) {
+      //   let obj = {}
+      //   this.mediaAccount.forEach((i) => {
+      //     this.chooseList.push(
+      //       ...this.mediaAccountArr.filter((item) => i == item.value)
+      //     )
+      //   })
+      //   this.mediaAccountArr = [...this.chooseList, ...this.mediaAccountArr]
+      //   this.mediaAccountArr = this.mediaAccountArr.reduce((cur, next) => {
+      //     obj[next.value] ? '' : (obj[next.value] = true && cur.push(next))
+      //     return cur
+      //   }, [])
+      // }
+      // this.virtualoptions = this.mediaAccountArr
     },
     values(val) {
       this.$emit('update:selectVal', val)
     },
+  },
+  created() {
+    // 监听点击子组件
+    this.$on('clickVirtualItem', (item) => {
+      console.log(item)
+      this.curIndex = item.value
+    })
   },
   methods: {
     filterData(val) {
@@ -110,12 +130,21 @@ export default {
       })
     },
     visibleVirtualoptions(bool) {
-      if (!bool) {
-        this.$refs['virtualSelect'].reset()
-        this.$nextTick(() => {
-          this.mediaAccountArr = this.virtualoptions
-        })
-      }
+      setTimeout(() => {
+        this.isShow = bool
+      }, 2000)
+      console.log(this.curIndex, 99)
+      this.$refs['virtualSelect'].scrollToIndex(this.curIndex)
+      // if (!bool) {
+      //   this.$refs['virtualSelect'].reset()
+      //   this.mediaAccountArr = this.virtualoptions
+      //   console.log(
+      //     this.mediaAccountArr,
+      //     this.curIndex,
+      //     this.$refs['virtualSelect'],
+      //     90
+      //   )
+      // }
     },
     fuzzyQuery(keyWord) {
       let arr = []
@@ -124,6 +153,7 @@ export default {
           arr.push(i)
         }
       })
+      console.log(keyWord, arr, 77)
       return arr
     },
   },

@@ -1,16 +1,18 @@
 <template>
   <div ref="container" style="width: 100%">
     <el-popover
+      v-model="visible"
       placement="bottom-start"
       ref="pop"
       trigger="click"
       :close-delay="100"
-      :append-to-body="false"
+      :append-to-body="true"
       popper-class="treeSelect_popper"
       @show="showPopover"
       @hide="hidePopover"
     >
       <el-input
+        v-if="!isId"
         :readonly="true"
         placeholder="请输入"
         size="mini"
@@ -19,10 +21,21 @@
         v-model="treeSelectValue"
         clearable
       />
+      <el-input
+        v-else
+        :readonly="true"
+        placeholder="请输入"
+        size="mini"
+        slot="reference"
+        suffix-icon="el-icon-arrow-down"
+        v-model="isId"
+        clearable
+      />
       <div style="padding-left: 2%">
         <el-input
           placeholder="请输入筛选值"
           v-model="filterVal"
+          size="mini"
           clearable
           suffix-icon="el-icon-search"
         />
@@ -36,42 +49,43 @@
           highlight-current
           :current-node-key="currentNode"
           :filter-node-method="filterNode"
+          :default-expand-all="true"
           @node-click="handleNodeClick"
+          @setChecked="handleChecked"
         />
       </div>
     </el-popover>
   </div>
 </template>
 <script>
-import { cloneDeep } from 'lodash'
+import { cloneDeep } from "lodash";
 
 export default {
-  name: 'CTreeSelect',
+  name: "CTreeSelect",
   data() {
     return {
-      filterVal: '',
+      filterVal: "",
       valueArr: [],
-      currentNode: '',
+      currentNode: "",
       treeData: [],
-    }
+      visible: false,
+      isId: "",
+    };
   },
   model: {
-    prop: 'treeSelectValue',
-    event: 'selectcChange',
+    prop: "treeSelectValue",
+    event: "selectChange",
   },
   props: {
-    id: {
-      type: String,
-      default: '',
-    },
+    name: [String, Number],
     treeSelectValue: {
       type: String,
-      default: '',
+      default: "",
     },
     defaultProps: {
       type: Object,
       default: () => {
-        return { value: 'id', label: 'label', children: 'children' }
+        return { value: "id", label: "name", children: "children" };
       },
     },
     // TODO: 接收树形数据
@@ -81,49 +95,75 @@ export default {
     },
   },
   watch: {
-    data(val) {
-      this.treeData = cloneDeep(val)
+    data: {
+      handler(val) {
+        this.treeData = cloneDeep(val);
+        this.findName(this.treeData);
+      },
+      immediate: true,
     },
     filterVal(val) {
-      this.$refs.tree.filter(val)
+      this.$refs.tree.filter(val);
     },
-    id(val) {
-      console.log(val, 'id')
-      this.currentNode = this.id
-      this.$nextTick(() => {
-        this.$refs['tree'].setCurrentKey(this.id)
-      })
+    name: {
+      handler(val) {
+        this.$nextTick(() => {
+          this.$refs["tree"].setCurrentKey(val);
+        });
+      },
+      immediate: true,
+    },
+    treeSelectValue(val) {
+      if (!val) {
+        this.isId = "";
+      }
     },
   },
   created() {},
   methods: {
-    showPopver() {},
+    showPopover() {
+      this.$refs["tree"].setCurrentKey(this.isId);
+    },
+    hidePopover() {},
+    handleChecked() {},
     handleNodeClick(data, node) {
-      this.handleGetNodeName(node)
-      this.currentNode = data?.id
+      this.visible = false;
+      // this.$emit("update:id", data?.id);
+      this.handleGetNodeName(node);
+      this.currentNode = data?.id;
       this.$nextTick(() => {
-        this.$refs['tree'].setCurrentKey(this.currentNode)
-      })
-      this.$emit('selectcChange', data.label)
-      this.$emit('handleGetValue', {
+        this.$refs["tree"].setCurrentKey(this.currentNode);
+      });
+      this.isId = data.name;
+      this.$emit("selectChange", data.id);
+      // console.log(this.treeSelectValue, data.name, 78);
+      this.$emit("handleGetValue", {
         data,
         node,
-      })
+      });
     },
     // 获取节点名称递归
     handleGetNodeName(node) {
-      if (node.parent.label) {
-        this.valueArr.unshift(node.parent.label)
-        this.handleGetNodeName(node.parent)
+      if (node.parent.name) {
+        this.valueArr.unshift(node.parent.name);
+        this.handleGetNodeName(node.parent);
       }
     },
     filterNode(value, data) {
-      console.log(value, data, '树')
-      if (!value) return true
-      return data?.label?.indexOf(value) !== -1
+      if (!value) return true;
+      return data?.name?.indexOf(value) !== -1;
+    },
+    findName(data) {
+      data.forEach((i) => {
+        if (this.name === i.id) {
+          this.isId = i.name;
+        } else if (i?.children) {
+          this.findName(i.children);
+        }
+      });
     },
   },
-}
+};
 </script>
 <style lang="less" scoped>
 .content {

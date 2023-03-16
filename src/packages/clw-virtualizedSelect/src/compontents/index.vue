@@ -2,6 +2,7 @@
   <el-option
     ref="options"
     :key="source[value]"
+    :open-delay="2000"
     :label="source[label]"
     :value="source[value]"
     @click.native="handleClick(source)"
